@@ -1,13 +1,21 @@
 import os
+import requests
 import dash_core_components as dcc
 import dash_html_components as html
-from flask import Flask
+from flask import Flask, json
 from dash import Dash
 from dotenv import load_dotenv
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
+
+usgs = 'http://earthquake.usgs.gov/earthquakes/'
+geoJsonFeed = 'feed/v1.0/summary/4.5_month.geojson'
+url = '{}{}'.format(usgs, geoJsonFeed)
+req = requests.get(url)
+d = json.loads(req.text)
+print(d['metadata'])
 
 app_name = 'Dash Earthquakes'
 server = Flask(app_name)
