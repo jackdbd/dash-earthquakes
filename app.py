@@ -3,8 +3,10 @@ import os
 import pandas as pd
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.graph_objs as go
 from flask import Flask, json
 from dash import Dash
+from dash.dependencies import Input, Output
 from dotenv import load_dotenv
 
 
@@ -16,6 +18,9 @@ load_dotenv(dotenv_path)
 # url = '{}{}'.format(usgs, geoJsonFeed)
 # req = requests.get(url)
 # data = json.loads(req.text)
+
+mapbox_access_token = os.environ.get('MAPBOX_ACCESS_TOKEN', 'mapbox-token')
+
 
 # local development
 with open('4.5_month.geojson') as data_file:
@@ -81,19 +86,61 @@ app.layout = html.Div(children=[
         create_table(dataframe),
     ], style=styles['column']),
 
-    dcc.Graph(
-        id='example-graph',
-        figure={
-            'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-            ],
-            'layout': {
-                'title': 'Dash Data Visualization'
-            }
-        }
-    )
+    dcc.Dropdown(
+        options=[
+            {'label': 'San Francisco', 'value': 'SF'},
+            {'label': 'Los Angeles', 'value': 'LA'},
+        ],
+        value='SF',
+        id='my-dropdown'
+    ),
+
+    # create empty figure. It will be updated when _update_graph is triggered
+    dcc.Graph(id='graph-geo'),
 ])
+
+@app.callback(
+    output=Output('graph-geo', 'figure'),
+    inputs=[Input('my-dropdown', 'value')])
+def _update_graph(val):
+    dff = dataframe
+
+    # Viareggio
+    lat = 43.866667
+    lon = 10.233333
+
+    layout = go.Layout(
+        autosize=True,
+        hovermode='closest',
+        height=750,
+        # margin=go.Margin(l=50, r=20, t=10, b=80),
+        mapbox=dict(
+            accesstoken=mapbox_access_token,
+            bearing=0,
+            center=dict(
+                lat=lat,
+                lon=lon
+            ),
+            pitch=0,
+            zoom=8,
+            # style="dark",
+        ),
+    )
+
+    data = go.Data([
+        go.Scattermapbox(
+            lat=['{}'.format(lat)],
+            lon=['{}'.format(lon)],
+            mode='markers',
+            marker=go.Marker(
+                size=14
+            ),
+            text=['Viareggio'],
+        )
+    ])
+
+    figure = go.Figure(data=data, layout=layout)
+    return figure
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=8080)
