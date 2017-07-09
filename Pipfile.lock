@@ -1,0 +1,98 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "e2989dd525d29c20ec54a1c39a9094e72afd1d69b31bd68242b83430bed4b919"
+        },
+        "requires": {},
+        "sources": [
+            {
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "Flask": {
+            "version": "==0.12.2"
+        },
+        "Flask-Compress": {
+            "version": "==1.4.0"
+        },
+        "Flask-SeaSurf": {
+            "version": "==0.2.2"
+        },
+        "Jinja2": {
+            "version": "==2.9.6"
+        },
+        "MarkupSafe": {
+            "version": "==1.0"
+        },
+        "Werkzeug": {
+            "version": "==0.12.2"
+        },
+        "certifi": {
+            "version": "==2017.4.17"
+        },
+        "chardet": {
+            "version": "==3.0.4"
+        },
+        "click": {
+            "version": "==6.7"
+        },
+        "dash": {
+            "version": "==0.17.7"
+        },
+        "dash-core-components": {
+            "version": "==0.5.3"
+        },
+        "dash-html-components": {
+            "version": "==0.6.2"
+        },
+        "dash_renderer": {
+            "version": "==0.7.3"
+        },
+        "decorator": {
+            "version": "==4.0.11"
+        },
+        "idna": {
+            "version": "==2.5"
+        },
+        "ipython_genutils": {
+            "version": "==0.2.0"
+        },
+        "itsdangerous": {
+            "version": "==0.24"
+        },
+        "jsonschema": {
+            "version": "==2.6.0"
+        },
+        "jupyter_core": {
+            "version": "==4.3.0"
+        },
+        "nbformat": {
+            "version": "==4.3.0"
+        },
+        "plotly": {
+            "version": "==2.0.12"
+        },
+        "python-dotenv": {
+            "version": "==0.6.4"
+        },
+        "pytz": {
+            "version": "==2017.2"
+        },
+        "requests": {
+            "version": "==2.18.1"
+        },
+        "six": {
+            "version": "==1.10.0"
+        },
+        "traitlets": {
+            "version": "==4.3.2"
+        },
+        "urllib3": {
+            "version": "==1.21.1"
+        }
+    },
+    "develop": {}
+}
