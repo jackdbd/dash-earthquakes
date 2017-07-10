@@ -21,6 +21,22 @@ load_dotenv(dotenv_path)
 
 mapbox_access_token = os.environ.get('MAPBOX_ACCESS_TOKEN', 'mapbox-token')
 
+# http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=5
+colorscale_magnitude = [
+    [0, '#ffffb2'],
+    [0.25, '#fecc5c'],
+    [0.5, '#fd8d3c'],
+    [0.75, '#f03b20'],
+    [1, '#bd0026'],
+]
+
+# http://colorbrewer2.org/#type=sequential&scheme=Greys&n=3
+colorscale_depth = [
+    [0, '#f0f0f0'],
+    [0.5, '#bdbdbd'],
+    [0.1, '#636363'],
+]
+
 
 # local development
 with open('4.5_month.geojson') as data_file:
@@ -29,9 +45,7 @@ with open('4.5_month.geojson') as data_file:
 
 def create_dataframe(d):
     features = d['features']
-    # earthquake properties: Place, Magnitude, Time, Timezone
     properties = [x['properties'] for x in features]
-    # earthquake coordinates: Latitude, Longitude, Depth
     geometries = [x['geometry'] for x in features]
     coordinates = [x['coordinates'] for x in geometries]
     dd = {
@@ -39,19 +53,37 @@ def create_dataframe(d):
         'Magnitude': [x['mag'] for x in properties],
         'Time': [x['time'] for x in properties],
         'Timezone': [x['tz'] for x in properties],
+        'Detail': [x['detail'] for x in properties],
         'Longitude': [x[0] for x in coordinates],
         'Latitude': [x[1] for x in coordinates],
         'Depth': [x[2] for x in coordinates],
     }
+    # html text to display when hovering
+    texts = list()
+    for i in range(len(properties)):
+        text = '{}<br>Magnitude: {}<br>Depth: {} km'\
+            .format(dd['Place'][i], dd['Magnitude'][i], dd['Depth'][i])
+        texts.append(text)
+    dd.update({'Text': texts})
     return pd.DataFrame(dd)
 
+
+def create_metadata(d):
+    dd = {
+        'title': d['metadata']['title'],
+        'api': d['metadata']['api'],
+    }
+    return dd
+
 dataframe = create_dataframe(data)
+metadata = create_metadata(data)
 # print(dataframe.head())
 # print(data['metadata']['count'])
 
 
 def create_table(df, max_rows=10):
-    columns = df.columns.values
+    # columns = list(filter(lambda x: x != 'Text', df.columns.values))
+    columns = ['Magnitude', 'Latitude', 'Longitude', 'Place', 'Time']
     num_rows = min(df.shape[0], max_rows)
     table = html.Table(
         # Header
@@ -99,17 +131,18 @@ app.layout = html.Div(children=[
     dcc.Graph(id='graph-geo'),
 ])
 
+
 @app.callback(
     output=Output('graph-geo', 'figure'),
     inputs=[Input('my-dropdown', 'value')])
 def _update_graph(val):
     dff = dataframe
-
-    # Viareggio
-    lat = 43.866667
-    lon = 10.233333
+    initial_latitude = 0
+    initial_longitude = 0
+    radius_multiplier = {'inner': 1.5, 'outer': 3}
 
     layout = go.Layout(
+        title=metadata['title'],
         autosize=True,
         hovermode='closest',
         height=750,
@@ -118,25 +151,44 @@ def _update_graph(val):
             accesstoken=mapbox_access_token,
             bearing=0,
             center=dict(
-                lat=lat,
-                lon=lon
+                lat=initial_latitude,
+                lon=initial_longitude
             ),
             pitch=0,
-            zoom=8,
-            # style="dark",
+            zoom=1,
+            style="dark",
         ),
     )
 
     data = go.Data([
+        # outer circles represent magnitude
         go.Scattermapbox(
-            lat=['{}'.format(lat)],
-            lon=['{}'.format(lon)],
+            lat=dff['Latitude'],
+            lon=dff['Longitude'],
             mode='markers',
             marker=go.Marker(
-                size=14
+                size=dff['Magnitude'] * radius_multiplier['outer'],
+                colorscale=colorscale_magnitude,
+                color=dff['Magnitude'],
+                opacity=1,
             ),
-            text=['Viareggio'],
-        )
+            text=dff['Text'],
+            showlegend=False
+        ),
+        # inner circles represent depth
+        go.Scattermapbox(
+            lat=dff['Latitude'],
+            lon=dff['Longitude'],
+            mode='markers',
+            marker=go.Marker(
+                size=dff['Magnitude'] * radius_multiplier['inner'],
+                colorscale=colorscale_depth,
+                color=dff['Depth'],
+                opacity=1,
+            ),
+            hoverinfo='skip',  # outer circles already handle hovering
+            showlegend=False
+        ),
     ])
 
     figure = go.Figure(data=data, layout=layout)
