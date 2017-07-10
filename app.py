@@ -113,10 +113,18 @@ server.secret_key = os.environ.get('SECRET_KEY', 'default-secret-key')
 app = Dash(name=app_name, server=server, csrf_protect=False)
 
 app.layout = html.Div(children=[
-    html.H1(children=app_name),
+    html.H1(children=app_name, style={'font-family': 'Raleway'}),
     html.Div([
         create_table(dataframe),
     ], style=styles['column']),
+
+    html.A(
+        children=[html.I(children=[], className='fa fa-twitter fa-2x')],
+        id='tweet', title='Tweet me!', href='https://twitter.com/',
+        target='_blank',
+    ),
+
+    html.I(children=[], className='fa fa-github fa-2x'),
 
     dcc.Dropdown(
         options=[
@@ -146,6 +154,7 @@ def _update_graph(val):
         autosize=True,
         hovermode='closest',
         height=750,
+        font=dict(family='Raleway'),
         # margin=go.Margin(l=50, r=20, t=10, b=80),
         mapbox=dict(
             accesstoken=mapbox_access_token,
@@ -156,7 +165,7 @@ def _update_graph(val):
             ),
             pitch=0,
             zoom=1,
-            style="dark",
+            style='dark',
         ),
     )
 
@@ -173,7 +182,8 @@ def _update_graph(val):
                 opacity=1,
             ),
             text=dff['Text'],
-            showlegend=False
+            # hoverinfo='text',
+            showlegend=False,
         ),
         # inner circles represent depth
         go.Scattermapbox(
@@ -193,6 +203,14 @@ def _update_graph(val):
 
     figure = go.Figure(data=data, layout=layout)
     return figure
+
+external_css = [
+    '//fonts.googleapis.com/css?family=Raleway:400,300,600',
+    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+]
+
+for css in external_css:
+    app.css.append_css({'external_url': css})
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=8080)
