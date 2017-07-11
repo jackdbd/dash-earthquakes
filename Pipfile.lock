@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a706b38b0d26a21fd45c90a5daee8bdd1de0c5e6db7d23e7f8c6e75f715bb3d9"
+            "sha256": "7edb65abbf59833a772e387599800b87aeef0c768ff0a3469b74f2d29921325b"
         },
         "requires": {},
         "sources": [
@@ -29,6 +29,9 @@
         },
         "Werkzeug": {
             "version": "==0.12.2"
+        },
+        "arrow": {
+            "version": "==0.10.0"
         },
         "certifi": {
             "version": "==2017.4.17"
@@ -82,7 +85,7 @@
             "version": "==2.0.12"
         },
         "python-dateutil": {
-            "version": "==2.6.0"
+            "version": "==2.6.1"
         },
         "python-dotenv": {
             "version": "==0.6.4"

@@ -1,5 +1,7 @@
 import os
+import arrow
 # import requests
+import functools
 import pandas as pd
 import dash_core_components as dcc
 import dash_html_components as html
@@ -43,16 +45,21 @@ with open('4.5_month.geojson') as data_file:
     data = json.load(data_file)
 
 
+def convert_timestamp(timestamp_ms):
+    return arrow.get(timestamp_ms / 1000.0).format()
+
+
 def create_dataframe(d):
     features = d['features']
     properties = [x['properties'] for x in features]
     geometries = [x['geometry'] for x in features]
     coordinates = [x['coordinates'] for x in geometries]
+    times = [convert_timestamp(x['time']) for x in properties]
     dd = {
         'Place': [x['place'] for x in properties],
         'Magnitude': [x['mag'] for x in properties],
-        'Time': [x['time'] for x in properties],
-        'Timezone': [x['tz'] for x in properties],
+        'Time': times,
+        # 'Timezone': [x['tz'] for x in properties],
         'Detail': [x['detail'] for x in properties],
         'Longitude': [x[0] for x in coordinates],
         'Latitude': [x[1] for x in coordinates],
@@ -61,8 +68,8 @@ def create_dataframe(d):
     # html text to display when hovering
     texts = list()
     for i in range(len(properties)):
-        text = '{}<br>Magnitude: {}<br>Depth: {} km'\
-            .format(dd['Place'][i], dd['Magnitude'][i], dd['Depth'][i])
+        text = '{}<br>{}<br>Magnitude: {}<br>Depth: {} km'.format(
+            dd['Time'][i], dd['Place'][i], dd['Magnitude'][i], dd['Depth'][i])
         texts.append(text)
     dd.update({'Text': texts})
     return pd.DataFrame(dd)
@@ -78,17 +85,27 @@ def create_metadata(d):
 dataframe = create_dataframe(data)
 metadata = create_metadata(data)
 # print(dataframe.head())
-# print(data['metadata']['count'])
 
 
-def create_table(df, max_rows=1000):
-    # columns = list(filter(lambda x: x != 'Text', df.columns.values))
-    columns = ['Magnitude', 'Latitude', 'Longitude', 'Place', 'Time']
-    num_rows = min(df.shape[0], max_rows)
+def create_td(series, col):
+    val = series[col]
+    if col == 'Detail':
+        td = html.Td(
+            html.A(children='GeoJSON', href='{}'.format(val), target='_blank'))
+    else:
+        td = html.Td(val)
+    return td
+
+
+def create_table(df):
+    columns = ['Magnitude', 'Latitude', 'Longitude', 'Time', 'Place', 'Detail']
+    num_rows = data['metadata']['count']
     thead = html.Thead(html.Tr([html.Th(col) for col in columns]))
     table_rows = list()
     for i in range(num_rows):
-        tr = html.Tr([html.Td(df.iloc[i][col]) for col in columns])
+        tr = html.Tr(
+            children=list(map(functools.partial(create_td, df.iloc[i]),
+                              columns)))
         table_rows.append(tr)
     tbody = html.Tbody(children=table_rows)
     table = html.Table(children=[thead, tbody], id='my-table')
@@ -104,6 +121,16 @@ styles = {
         'minHeight': '200px'
     },
     'pre': {'border': 'thin lightgrey solid'}
+}
+
+regions = {
+    'world': {'lat': 0, 'lon': 0, 'zoom': 1},
+    'europe': {'lat': 50, 'lon': 0, 'zoom': 3},
+    'north_america': {'lat': 40, 'lon': -100, 'zoom': 2},
+    'south_america': {'lat': -15, 'lon': -60, 'zoom': 2},
+    'africa': {'lat': 0, 'lon': 20, 'zoom': 2},
+    'asia': {'lat': 30, 'lon': 100, 'zoom': 2},
+    'oceania': {'lat': -10, 'lon': 130, 'zoom': 2},
 }
 
 app_name = 'Dash Earthquakes'
@@ -122,13 +149,29 @@ app.layout = html.Div(children=[
 
     html.I(children=[], className='fa fa-github fa-2x'),
 
+    html.Label('Map style'),
     dcc.Dropdown(
         options=[
-            {'label': 'San Francisco', 'value': 'SF'},
-            {'label': 'Los Angeles', 'value': 'LA'},
+            {'label': 'Light', 'value': 'light'},
+            {'label': 'Dark', 'value': 'dark'},
         ],
-        value='SF',
-        id='my-dropdown'
+        value='dark',
+        id='dropdown-map-style'
+    ),
+
+    html.Label('Region'),
+    dcc.Dropdown(
+        options=[
+            {'label': 'World', 'value': 'world'},
+            {'label': 'Europe', 'value': 'europe'},
+            {'label': 'North America', 'value': 'north_america'},
+            {'label': 'South America', 'value': 'south_america'},
+            {'label': 'Africa', 'value': 'africa'},
+            {'label': 'Asia', 'value': 'asia'},
+            {'label': 'Oceania', 'value': 'oceania'},
+        ],
+        value='world',
+        id='dropdown-region'
     ),
 
     # create empty figure. It will be updated when _update_graph is triggered
@@ -146,11 +189,10 @@ app.layout = html.Div(children=[
 
 @app.callback(
     output=Output('graph-geo', 'figure'),
-    inputs=[Input('my-dropdown', 'value')])
-def _update_graph(val):
+    inputs=[Input('dropdown-map-style', 'value'),
+            Input('dropdown-region', 'value')])
+def _update_graph(map_style, region):
     dff = dataframe
-    initial_latitude = 0
-    initial_longitude = 0
     radius_multiplier = {'inner': 1.5, 'outer': 3}
 
     layout = go.Layout(
@@ -164,12 +206,12 @@ def _update_graph(val):
             accesstoken=mapbox_access_token,
             bearing=0,
             center=dict(
-                lat=initial_latitude,
-                lon=initial_longitude
+                lat=regions[region]['lat'],
+                lon=regions[region]['lon'],
             ),
             pitch=0,
-            zoom=1,
-            style='dark',
+            zoom=regions[region]['zoom'],
+            style=map_style,
         ),
     )
 
@@ -209,7 +251,10 @@ def _update_graph(val):
     return figure
 
 external_js = [
-    'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js',
+    # google analytics
+    'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/'
+    'e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js',
+    # jQuery, DataTables, script to initialize DataTables
     'https://code.jquery.com/jquery-3.2.1.slim.min.js',
     '//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js',
     'https://codepen.io/jackaljack/pen/bROVgV.js',
@@ -220,7 +265,7 @@ for js in external_js:
 
 external_css = [
     'https://fonts.googleapis.com/css?family=Raleway',
-    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+    '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
     '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
 ]
 
