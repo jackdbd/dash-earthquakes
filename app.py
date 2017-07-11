@@ -81,18 +81,17 @@ metadata = create_metadata(data)
 # print(data['metadata']['count'])
 
 
-def create_table(df, max_rows=10):
+def create_table(df, max_rows=1000):
     # columns = list(filter(lambda x: x != 'Text', df.columns.values))
     columns = ['Magnitude', 'Latitude', 'Longitude', 'Place', 'Time']
     num_rows = min(df.shape[0], max_rows)
-    table = html.Table(
-        # Header
-        [html.Tr([html.Th(col) for col in columns])] +
-
-        # Body
-        [html.Tr([html.Td(df.iloc[i][col]) for col in columns])
-         for i in range(num_rows)]
-    )
+    thead = html.Thead(html.Tr([html.Th(col) for col in columns]))
+    table_rows = list()
+    for i in range(num_rows):
+        tr = html.Tr([html.Td(df.iloc[i][col]) for col in columns])
+        table_rows.append(tr)
+    tbody = html.Tbody(children=table_rows)
+    table = html.Table(children=[thead, tbody], id='my-table')
     return table
 
 styles = {
@@ -114,9 +113,6 @@ app = Dash(name=app_name, server=server, csrf_protect=False)
 
 app.layout = html.Div(children=[
     html.H1(children=app_name, style={'font-family': 'Raleway'}),
-    html.Div([
-        create_table(dataframe),
-    ], style=styles['column']),
 
     html.A(
         children=[html.I(children=[], className='fa fa-twitter fa-2x')],
@@ -137,6 +133,14 @@ app.layout = html.Div(children=[
 
     # create empty figure. It will be updated when _update_graph is triggered
     dcc.Graph(id='graph-geo'),
+
+    html.Div(
+        children=[create_table(dataframe)],
+        style={
+            'font-family': 'Raleway',
+            'padding-left': '6%',
+            'padding-right': '6%'}
+    ),
 ])
 
 
@@ -204,9 +208,20 @@ def _update_graph(val):
     figure = go.Figure(data=data, layout=layout)
     return figure
 
+external_js = [
+    'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js',
+    'https://code.jquery.com/jquery-3.2.1.slim.min.js',
+    '//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js',
+    'https://codepen.io/jackaljack/pen/bROVgV.js',
+]
+
+for js in external_js:
+    app.scripts.append_script({'external_url': js})
+
 external_css = [
-    '//fonts.googleapis.com/css?family=Raleway:400,300,600',
+    'https://fonts.googleapis.com/css?family=Raleway',
     'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+    '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
 ]
 
 for css in external_css:
