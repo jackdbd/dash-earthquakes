@@ -111,17 +111,91 @@ def create_table(df):
     table = html.Table(children=[thead, tbody], id='my-table')
     return table
 
-styles = {
-    'column': {
-        'display': 'inline-block',
-        # 'width': '33%',
-        'padding': 10,
-        'background-color': '#ff0000',
-        'boxSizing': 'border-box',
-        'minHeight': '200px'
-    },
-    'pre': {'border': 'thin lightgrey solid'}
-}
+
+def create_header(some_string):
+    header = html.Header(html.H1(children=some_string, style={'font-family': 'Raleway', 'background-color': '#ff0000'}))
+    return header
+
+
+def create_footer():
+    header = html.Footer('I am the footer', style={'font-family': 'Raleway', 'background-color': '#00ff00'})
+    return header
+
+
+def create_sidebar():
+    div1 = html.Div(
+        children=[
+            html.Label('Map style'),
+            dcc.Dropdown(
+                options=[
+                    {'label': 'Light', 'value': 'light'},
+                    {'label': 'Dark', 'value': 'dark'},
+                ],
+                value='dark',
+                id='dropdown-map-style',
+            ),
+        ],
+        className='row',
+    )
+    div2 = html.Div(
+        children=[
+            html.Label('Region'),
+            dcc.Dropdown(
+                options=[
+                    {'label': 'World', 'value': 'world'},
+                    {'label': 'Europe', 'value': 'europe'},
+                    {'label': 'North America', 'value': 'north_america'},
+                    {'label': 'South America', 'value': 'south_america'},
+                    {'label': 'Africa', 'value': 'africa'},
+                    {'label': 'Asia', 'value': 'asia'},
+                    {'label': 'Oceania', 'value': 'oceania'},
+                ],
+                value='world',
+                id='dropdown-region',
+                className='container',
+            ),
+        ],
+        className='row',
+    )
+    div3 = html.Div(
+        children=[
+            dcc.Markdown('''
+        # Dash!
+
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nec 
+        vulputate velit. Pellentesque in pretium quam, ac molestie sapien. 
+        Praesent laoreet viverra nisi, tempor finibus dui. Vestibulum ac mattis 
+        neque.
+
+        > Some more stuff as quote...
+        > [Lorem Ipsum link](http://it.lipsum.com/feed/html).
+
+        ***
+        '''.replace('  ', ''), className='container'),
+        ],
+        className='row',
+    )
+    nav = html.Nav([div1, div2, div3], id='sidebar')
+    return nav
+
+
+def create_content():
+    # create empty figure. It will be updated when _update_graph is triggered
+    graph = dcc.Graph(id='graph-geo')
+    content = html.Div(graph, id='content')
+    return content
+
+# styles = {
+#     'column': {
+#         'display': 'inline-block',
+#         # 'width': '33%',
+#         'padding': 10,
+#         'background-color': '#ff0000',
+#         'boxSizing': 'border-box',
+#         'minHeight': '200px'
+#     },
+#     'pre': {'border': 'thin lightgrey solid'}
+# }
 
 regions = {
     'world': {'lat': 0, 'lon': 0, 'zoom': 1},
@@ -138,53 +212,40 @@ server = Flask(app_name)
 server.secret_key = os.environ.get('SECRET_KEY', 'default-secret-key')
 app = Dash(name=app_name, server=server, csrf_protect=False)
 
-app.layout = html.Div(children=[
-    html.H1(children=app_name, style={'font-family': 'Raleway'}),
+app.layout = html.Div(
+    children=[
+        create_header(app_name),
 
-    html.A(
-        children=[html.I(children=[], className='fa fa-twitter fa-2x')],
-        id='tweet', title='Tweet me!', href='https://twitter.com/',
-        target='_blank',
-    ),
+        html.A(
+            children=[html.I(children=[], className='fa fa-twitter fa-2x')],
+            id='tweet', title='Tweet me!', href='https://twitter.com/',
+            target='_blank',
+        ),
+        html.I(children=[], className='fa fa-github fa-2x'),
 
-    html.I(children=[], className='fa fa-github fa-2x'),
-
-    html.Label('Map style'),
-    dcc.Dropdown(
-        options=[
-            {'label': 'Light', 'value': 'light'},
-            {'label': 'Dark', 'value': 'dark'},
-        ],
-        value='dark',
-        id='dropdown-map-style'
-    ),
-
-    html.Label('Region'),
-    dcc.Dropdown(
-        options=[
-            {'label': 'World', 'value': 'world'},
-            {'label': 'Europe', 'value': 'europe'},
-            {'label': 'North America', 'value': 'north_america'},
-            {'label': 'South America', 'value': 'south_america'},
-            {'label': 'Africa', 'value': 'africa'},
-            {'label': 'Asia', 'value': 'asia'},
-            {'label': 'Oceania', 'value': 'oceania'},
-        ],
-        value='world',
-        id='dropdown-region'
-    ),
-
-    # create empty figure. It will be updated when _update_graph is triggered
-    dcc.Graph(id='graph-geo'),
-
-    html.Div(
-        children=[create_table(dataframe)],
-        style={
-            'font-family': 'Raleway',
-            'padding-left': '6%',
-            'padding-right': '6%'}
-    ),
-])
+        html.Div(
+            children=[
+                html.Div(
+                    children=[
+                        html.Div(create_sidebar(), className='two columns'),
+                        html.Div(create_content(), className='ten columns'),
+                    ],
+                    className='row',
+                ),
+                html.Div(
+                    children=[
+                        html.Div(create_table(dataframe), style={
+                            'font-family': 'Raleway',
+                            'padding-left': '6%',
+                            'padding-right': '6%',
+                        })
+                    ],
+                    className='row'),
+            ],
+        ),
+        create_footer(),
+    ],
+)
 
 
 @app.callback(
@@ -264,6 +325,8 @@ for js in external_js:
     app.scripts.append_script({'external_url': js})
 
 external_css = [
+    # dash stylesheet
+    'https://codepen.io/chriddyp/pen/bWLwgP.css',
     'https://fonts.googleapis.com/css?family=Raleway',
     '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
     '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
