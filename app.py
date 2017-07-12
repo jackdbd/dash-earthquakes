@@ -1,6 +1,6 @@
 import os
 import arrow
-# import requests
+import requests
 import functools
 import pandas as pd
 import dash_core_components as dcc
@@ -15,11 +15,15 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-# usgs = 'http://earthquake.usgs.gov/earthquakes/'
-# geoJsonFeed = 'feed/v1.0/summary/4.5_month.geojson'
-# url = '{}{}'.format(usgs, geoJsonFeed)
-# req = requests.get(url)
-# data = json.loads(req.text)
+usgs = 'http://earthquake.usgs.gov/earthquakes/'
+geoJsonFeed = 'feed/v1.0/summary/4.5_month.geojson'
+url = '{}{}'.format(usgs, geoJsonFeed)
+req = requests.get(url)
+data = json.loads(req.text)
+
+# local development
+# with open('4.5_month.geojson') as data_file:
+#     data = json.load(data_file)
 
 mapbox_access_token = os.environ.get('MAPBOX_ACCESS_TOKEN', 'mapbox-token')
 
@@ -40,9 +44,10 @@ colorscale_depth = [
 ]
 
 
-# local development
-with open('4.5_month.geojson') as data_file:
-    data = json.load(data_file)
+theme = {
+    'font-family': 'Raleway',
+    'background-color': '#787878',
+}
 
 
 def convert_timestamp(timestamp_ms):
@@ -59,7 +64,6 @@ def create_dataframe(d):
         'Place': [x['place'] for x in properties],
         'Magnitude': [x['mag'] for x in properties],
         'Time': times,
-        # 'Timezone': [x['tz'] for x in properties],
         'Detail': [x['detail'] for x in properties],
         'Longitude': [x[0] for x in coordinates],
         'Latitude': [x[1] for x in coordinates],
@@ -113,70 +117,154 @@ def create_table(df):
 
 
 def create_header(some_string):
-    header = html.Header(html.H1(children=some_string, style={'font-family': 'Raleway', 'background-color': '#ff0000'}))
+    header_style = {
+        'background-color': theme['background-color'],
+        'padding': '1.5rem',
+    }
+    header = html.Header(html.H1(children=some_string, style=header_style))
     return header
 
 
 def create_footer():
-    header = html.Footer('I am the footer', style={'font-family': 'Raleway', 'background-color': '#00ff00'})
-    return header
+    p = html.P(
+        children=[
+            html.Span('Built with '),
+            html.A('Plotly Dash',
+                   href='https://github.com/plotly/dash', target='_blank'),
+            html.Span(' and:'),
+        ],
+    )
+
+    span_style = {'vertical-align': 'top', 'padding-left': '1rem'}
+
+    usgs = html.A(
+        children=[
+            html.I([], className='fa fa-list fa-2x'),
+            html.Span('USGS GeoJSON feed', style=span_style)
+        ], style={'text-decoration': 'none'},
+        href='https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php',
+        target='_blank')
+    mapbox = html.A(
+        children=[
+            html.I([], className='fa fa-map-o fa-2x'),
+            html.Span('mapbox', style=span_style)
+        ], style={'text-decoration': 'none'},
+        href='https://www.mapbox.com/', target='_blank')
+
+    font_awesome = html.A(
+        children=[
+            html.I([], className='fa fa-font-awesome fa-2x'),
+            html.Span('Font Awesome', style=span_style)
+        ], style={'text-decoration': 'none'},
+        href='http://fontawesome.io/', target='_blank')
+    datatables = html.A(
+        children=[
+            html.I([], className='fa fa-table fa-2x'),
+            html.Span('jQuery Datatables', style=span_style)
+        ], style={'text-decoration': 'none'},
+        href='https://datatables.net/', target='_blank')
+
+    ul1 = html.Ul(
+        children=[
+            html.Li(mapbox),
+            html.Li(font_awesome),
+            html.Li(datatables),
+            html.Li(usgs),
+        ],
+        style={'list-style-type': 'none'},
+    )
+
+    hashtags = 'plotly,dash,usgs'
+    tweet = 'Dash Earthquake, a cool dashboard with Plotly Dash!'
+    twitter_href = 'https://twitter.com/intent/tweet?hashtags={}&text={}'\
+        .format(hashtags, tweet)
+    twitter = html.A(
+        children=html.I(children=[], className='fa fa-twitter fa-3x'),
+        title='Tweet me!', href=twitter_href, target='_blank')
+
+    github = html.A(
+        children=html.I(children=[], className='fa fa-github fa-3x'),
+        title='Repo on GitHub',
+        href='https://github.com/jackaljack/dash-earthquakes', target='_blank')
+
+    li_right_first = {'line-style-type': 'none', 'display': 'inline-block'}
+    li_right_others = {k: v for k, v in li_right_first.items()}
+    li_right_others.update({'margin-left': '10px'})
+    ul2 = html.Ul(
+        children=[
+            html.Li(twitter, style=li_right_first),
+            html.Li(github, style=li_right_others),
+        ],
+        style={
+            'position': 'absolute',
+            'right': '1.5rem',
+            'bottom': '1.5rem',
+        }
+    )
+
+    div = html.Div([p, ul1, ul2])
+    footer_style = {
+        'font-size': '2.2rem',
+        'background-color': theme['background-color'],
+        'padding': '2.5rem',
+        'margin-top': '3rem',
+    }
+    footer = html.Footer(div, style=footer_style)
+    return footer
 
 
-def create_sidebar():
-    div1 = html.Div(
-        children=[
-            html.Label('Map style'),
-            dcc.Dropdown(
-                options=[
-                    {'label': 'Light', 'value': 'light'},
-                    {'label': 'Dark', 'value': 'dark'},
-                ],
-                value='dark',
-                id='dropdown-map-style',
-            ),
+def create_dropdowns():
+    drop1 = dcc.Dropdown(
+        options=[
+            {'label': 'Light', 'value': 'light'},
+            {'label': 'Dark', 'value': 'dark'},
+            {'label': 'Satellite', 'value': 'satellite'},
+            {
+                'label': 'Custom',
+                'value': 'mapbox://styles/jackaljack/cj54a3sbr0f1e2rs2687h5k71'
+            }
         ],
-        className='row',
+        value='dark',
+        id='dropdown-map-style',
+        className='three columns offset-by-one'
     )
-    div2 = html.Div(
-        children=[
-            html.Label('Region'),
-            dcc.Dropdown(
-                options=[
-                    {'label': 'World', 'value': 'world'},
-                    {'label': 'Europe', 'value': 'europe'},
-                    {'label': 'North America', 'value': 'north_america'},
-                    {'label': 'South America', 'value': 'south_america'},
-                    {'label': 'Africa', 'value': 'africa'},
-                    {'label': 'Asia', 'value': 'asia'},
-                    {'label': 'Oceania', 'value': 'oceania'},
-                ],
-                value='world',
-                id='dropdown-region',
-                className='container',
-            ),
+    drop2 = dcc.Dropdown(
+        options=[
+            {'label': 'World', 'value': 'world'},
+            {'label': 'Europe', 'value': 'europe'},
+            {'label': 'North America', 'value': 'north_america'},
+            {'label': 'South America', 'value': 'south_america'},
+            {'label': 'Africa', 'value': 'africa'},
+            {'label': 'Asia', 'value': 'asia'},
+            {'label': 'Oceania', 'value': 'oceania'},
         ],
-        className='row',
+        value='world',
+        id='dropdown-region',
+        className='three columns offset-by-four'
     )
-    div3 = html.Div(
+    return [drop1, drop2]
+
+
+def create_description():
+    div = html.Div(
         children=[
             dcc.Markdown('''
-        # Dash!
+            The redder the outer circle, the higher the magnitude. The darker 
+            the inner circle, the deeper the earthquake.
+                        
+            > Currently no organization or government or scientist is capable 
+            > of succesfully predicting the time and occurrence of an
+            > earthquake.
+            > — Michael Blanpied
+            
+            Use the table below to know more about the {} earthquakes that 
+            exceeded magnitude 4.5 last month.
 
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam nec 
-        vulputate velit. Pellentesque in pretium quam, ac molestie sapien. 
-        Praesent laoreet viverra nisi, tempor finibus dui. Vestibulum ac mattis 
-        neque.
-
-        > Some more stuff as quote...
-        > [Lorem Ipsum link](http://it.lipsum.com/feed/html).
-
-        ***
-        '''.replace('  ', ''), className='container'),
+            ***
+            '''.format(data['metadata']['count']).replace('  ', '')),
         ],
-        className='row',
     )
-    nav = html.Nav([div1, div2, div3], id='sidebar')
-    return nav
+    return div
 
 
 def create_content():
@@ -184,18 +272,6 @@ def create_content():
     graph = dcc.Graph(id='graph-geo')
     content = html.Div(graph, id='content')
     return content
-
-# styles = {
-#     'column': {
-#         'display': 'inline-block',
-#         # 'width': '33%',
-#         'padding': 10,
-#         'background-color': '#ff0000',
-#         'boxSizing': 'border-box',
-#         'minHeight': '200px'
-#     },
-#     'pre': {'border': 'thin lightgrey solid'}
-# }
 
 regions = {
     'world': {'lat': 0, 'lon': 0, 'zoom': 1},
@@ -215,36 +291,19 @@ app = Dash(name=app_name, server=server, csrf_protect=False)
 app.layout = html.Div(
     children=[
         create_header(app_name),
-
-        html.A(
-            children=[html.I(children=[], className='fa fa-twitter fa-2x')],
-            id='tweet', title='Tweet me!', href='https://twitter.com/',
-            target='_blank',
-        ),
-        html.I(children=[], className='fa fa-github fa-2x'),
-
         html.Div(
             children=[
-                html.Div(
-                    children=[
-                        html.Div(create_sidebar(), className='two columns'),
-                        html.Div(create_content(), className='ten columns'),
-                    ],
-                    className='row',
-                ),
-                html.Div(
-                    children=[
-                        html.Div(create_table(dataframe), style={
-                            'font-family': 'Raleway',
-                            'padding-left': '6%',
-                            'padding-right': '6%',
-                        })
-                    ],
-                    className='row'),
+                html.Div(create_dropdowns(), className='row'),
+                html.Div(create_content(), className='row'),
+                html.Div(create_description(), className='row'),
+                html.Div(create_table(dataframe), className='row'),
             ],
         ),
+        # html.Hr(),
         create_footer(),
     ],
+    className='container',
+    style={'font-family': theme['font-family']}
 )
 
 
@@ -261,8 +320,8 @@ def _update_graph(map_style, region):
         autosize=True,
         hovermode='closest',
         height=750,
-        font=dict(family='Raleway'),
-        # margin=go.Margin(l=50, r=20, t=10, b=80),
+        font=dict(family=theme['font-family']),
+        margin=go.Margin(l=0, r=0, t=45, b=10),
         mapbox=dict(
             accesstoken=mapbox_access_token,
             bearing=0,
@@ -303,7 +362,8 @@ def _update_graph(map_style, region):
                 color=dff['Depth'],
                 opacity=1,
             ),
-            hoverinfo='skip',  # outer circles already handle hovering
+            # hovering behavior is already handled by outer circles
+            hoverinfo='skip',
             showlegend=False
         ),
     ])
@@ -328,6 +388,7 @@ external_css = [
     # dash stylesheet
     'https://codepen.io/chriddyp/pen/bWLwgP.css',
     'https://fonts.googleapis.com/css?family=Raleway',
+    # 'https://fonts.googleapis.com/css?family=Lobster',
     '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
     '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
 ]
@@ -336,4 +397,4 @@ for css in external_css:
     app.css.append_css({'external_url': css})
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8080)
+    app.run_server(debug=False, port=8080)
