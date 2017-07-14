@@ -308,7 +308,7 @@ regions = {
 app_name = 'Dash Earthquakes'
 server = Flask(app_name)
 server.secret_key = os.environ.get('SECRET_KEY', 'default-secret-key')
-app = Dash(name=app_name, server=server, csrf_protect=False)
+app = Dash(name=app_name, server=server)
 
 app.layout = html.Div(
     children=[
@@ -400,4 +400,4 @@ def _update_graph(map_style, region):
     return figure
 
 if __name__ == '__main__':
-    app.run_server(debug=False, port=8080)
+    app.run_server(debug=False, threaded=True)
