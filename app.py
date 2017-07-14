@@ -11,9 +11,31 @@ from dash import Dash
 from dash.dependencies import Input, Output
 from dotenv import load_dotenv
 
+external_js = [
+    # jQuery, DataTables, script to initialize DataTables
+    'https://code.jquery.com/jquery-3.2.1.slim.min.js',
+    '//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js',
+    'https://codepen.io/jackaljack/pen/bROVgV.js',
+]
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+external_css = [
+    # dash stylesheet
+    'https://codepen.io/chriddyp/pen/bWLwgP.css',
+    'https://fonts.googleapis.com/css?family=Raleway',
+    # 'https://fonts.googleapis.com/css?family=Lobster',
+    '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+    '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
+]
+
+try:
+    os.environ['DYNO']  # Heroku
+    # google analytics
+    external_js.append(
+        'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/'
+        'e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js')
+except KeyError:
+    dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(dotenv_path)
 
 usgs = 'http://earthquake.usgs.gov/earthquakes/'
 geoJsonFeed = 'feed/v1.0/summary/4.5_month.geojson'
@@ -306,6 +328,12 @@ app.layout = html.Div(
     style={'font-family': theme['font-family']}
 )
 
+for js in external_js:
+    app.scripts.append_script({'external_url': js})
+
+for css in external_css:
+    app.css.append_css({'external_url': css})
+
 
 @app.callback(
     output=Output('graph-geo', 'figure'),
@@ -370,31 +398,6 @@ def _update_graph(map_style, region):
 
     figure = go.Figure(data=data, layout=layout)
     return figure
-
-external_js = [
-    # google analytics
-    'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/'
-    'e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js',
-    # jQuery, DataTables, script to initialize DataTables
-    'https://code.jquery.com/jquery-3.2.1.slim.min.js',
-    '//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js',
-    'https://codepen.io/jackaljack/pen/bROVgV.js',
-]
-
-for js in external_js:
-    app.scripts.append_script({'external_url': js})
-
-external_css = [
-    # dash stylesheet
-    'https://codepen.io/chriddyp/pen/bWLwgP.css',
-    'https://fonts.googleapis.com/css?family=Raleway',
-    # 'https://fonts.googleapis.com/css?family=Lobster',
-    '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
-    '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
-]
-
-for css in external_css:
-    app.css.append_css({'external_url': css})
 
 if __name__ == '__main__':
     app.run_server(debug=False, port=8080)
