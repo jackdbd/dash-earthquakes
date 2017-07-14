@@ -6,6 +6,7 @@ import pandas as pd
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
+import plotly.plotly as py
 from flask import Flask, json
 from dash import Dash
 from dash.dependencies import Input, Output
@@ -27,6 +28,7 @@ external_css = [
     '//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css',
 ]
 
+
 try:
     os.environ['DYNO']  # Heroku
     # google analytics
@@ -36,6 +38,8 @@ try:
 except KeyError:
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
     load_dotenv(dotenv_path)
+
+py.sign_in(os.environ['PLOTLY_USERNAME'], os.environ['PLOTLY_API_KEY'])
 
 usgs = 'http://earthquake.usgs.gov/earthquakes/'
 geoJsonFeed = 'feed/v1.0/summary/4.5_month.geojson'
