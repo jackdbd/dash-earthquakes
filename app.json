@@ -1,0 +1,14 @@
+{
+  "name": "Dash Earthquakes",
+  "description": "A Plotly Dash application showing earthquake data from the USGS website",
+  "keywords": [
+    "plotly",
+    "dashboard",
+    "dash",
+    "usgs",
+    "mapbox"
+  ],
+  "repository": "https://github.com/jackaljack/dash-earthquakes",
+  "addons": [
+  ]
+}
