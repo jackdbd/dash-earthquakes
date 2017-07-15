@@ -3,6 +3,6 @@ python:
   - 3.5
   - 3.6
 install:
-  - pypenv install
+  - pipenv install
 script:
   - pipenv run pytest tests
