@@ -30,12 +30,15 @@ external_css = [
 
 
 try:
-    os.environ['DYNO']  # Heroku
+    # the app is on Heroku
+    os.environ['DYNO']
+    debug = False
     # google analytics
     external_js.append(
         'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/'
         'e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js')
 except KeyError:
+    debug = True
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
     load_dotenv(dotenv_path)
 
@@ -405,4 +408,4 @@ def _update_graph(map_style, region):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run_server(debug=True,  port=port, threaded=True)
+    app.run_server(debug=debug,  port=port, threaded=True)
