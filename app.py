@@ -34,9 +34,7 @@ try:
     os.environ['DYNO']
     debug = False
     # google analytics
-    external_js.append(
-        'https://cdn.rawgit.com/chriddyp/ca0d8f02a1659981a0ea7f013a378bbd/raw/'
-        'e79f3f789517deec58f41251f7dbb6bee72c44ab/plotly_ga.js')
+    external_js.append('https://codepen.io/jackaljack/pen/NgmpzR.js')
 except KeyError:
     debug = True
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
