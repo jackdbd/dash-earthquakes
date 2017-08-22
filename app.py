@@ -16,7 +16,7 @@ external_js = [
     # jQuery, DataTables, script to initialize DataTables
     'https://code.jquery.com/jquery-3.2.1.slim.min.js',
     '//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js',
-    'https://codepen.io/jackaljack/pen/bROVgV.js',
+    'https://codepen.io/jackdbd/pen/bROVgV.js',
 ]
 
 external_css = [
@@ -33,8 +33,8 @@ try:
     # the app is on Heroku
     os.environ['DYNO']
     debug = False
-    # google analytics
-    external_js.append('https://codepen.io/jackaljack/pen/NgmpzR.js')
+    # google analytics with my tracking ID
+    external_js.append('https://codepen.io/jackdbd/pen/NgmpzR.js')
 except KeyError:
     debug = True
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -212,7 +212,7 @@ def create_footer():
     github = html.A(
         children=html.I(children=[], className='fa fa-github fa-3x'),
         title='Repo on GitHub',
-        href='https://github.com/jackaljack/dash-earthquakes', target='_blank')
+        href='https://github.com/jackdbd/dash-earthquakes', target='_blank')
 
     li_right_first = {'line-style-type': 'none', 'display': 'inline-block'}
     li_right_others = {k: v for k, v in li_right_first.items()}
@@ -248,7 +248,7 @@ def create_dropdowns():
             {'label': 'Satellite', 'value': 'satellite'},
             {
                 'label': 'Custom',
-                'value': 'mapbox://styles/jackaljack/cj54a3sbr0f1e2rs2687h5k71'
+                'value': 'mapbox://styles/jackdbd/cj6nva4oi14542rqr3djx1liz'
             }
         ],
         value='dark',
