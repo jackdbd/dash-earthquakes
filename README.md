@@ -7,7 +7,7 @@ The [GeoJSON summary feed](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geo
 
 ![A GIF file showing a short demo on how to use the Dash Earthquakes dashboard](https://github.com/jackdbd/dash-earthquakes/blob/master/demo.gif "How to use the Dash Earthquakes dashboard")
 
-[App on Heroku](bit.ly/dash-earthquakes)
+[App on Heroku](https://belle-croissant-54211.herokuapp.com/)
 
 Built with:
 
