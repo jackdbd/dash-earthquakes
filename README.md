@@ -5,7 +5,9 @@ A Plotly Dash application showing earthquake data from the [US Geological Survey
 
 The [GeoJSON summary feed](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php) from the USGS website is updated every 15 minutes and it refers to the 4.5+ magnitude earthquakes occurred in the past month.
 
-![A GIF file showing a short demo on how to use the Dash Earthquakes dashboard](https://github.com/jackaljack/dash-earthquakes/blob/master/demo.gif "How to use the Dash Earthquakes dashboard")
+![A GIF file showing a short demo on how to use the Dash Earthquakes dashboard](https://github.com/jackdbd/dash-earthquakes/blob/master/demo.gif "How to use the Dash Earthquakes dashboard")
+
+[App on Heroku](bit.ly/dash-earthquakes)
 
 Built with:
 

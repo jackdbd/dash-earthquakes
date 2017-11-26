@@ -8,7 +8,7 @@
     "usgs",
     "mapbox"
   ],
-  "repository": "https://github.com/jackaljack/dash-earthquakes",
+  "repository": "https://github.com/jackdbd/dash-earthquakes",
   "addons": [
   ]
 }
