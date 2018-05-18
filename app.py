@@ -34,7 +34,7 @@ try:
     os.environ['DYNO']
     debug = False
     # google analytics with my tracking ID
-    external_js.append('https://codepen.io/jackdbd/pen/NgmpzR.js')
+    # external_js.append('https://codepen.io/jackdbd/pen/NgmpzR.js')
 except KeyError:
     debug = True
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
