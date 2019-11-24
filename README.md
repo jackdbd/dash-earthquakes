@@ -1,5 +1,6 @@
 # dash-earthquakes
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Build Status](https://travis-ci.org/jackdbd/dash-earthquakes.svg?branch=master)](https://travis-ci.org/jackdbd/dash-earthquakes) [![Python 3](https://pyup.io/repos/github/jackdbd/dash-earthquakes/python-3-shield.svg)](https://pyup.io/repos/github/jackdbd/dash-earthquakes/)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjackdbd%2Fdash-earthquakes.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjackdbd%2Fdash-earthquakes?ref=badge_shield)
 
 A Plotly Dash application showing earthquake data from the [US Geological Survey](https://earthquake.usgs.gov/)
 
@@ -15,3 +16,7 @@ Built with:
 - [mapbox](https://www.mapbox.com/)
 - [Font Awesome](http://fontawesome.io/)
 - [jQuery Datatables](https://datatables.net/)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fjackdbd%2Fdash-earthquakes.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fjackdbd%2Fdash-earthquakes?ref=badge_large)
