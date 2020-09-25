@@ -25,6 +25,8 @@ This project requires to get some API keys from external services.
 
 ## Installation
 
+:warning: Do **NOT** use the `requirements.txt` file to install the dependencies on your machine. I need to keep it to deploy on Heroku because [Heroku does not yet support poetry](https://github.com/heroku/heroku-buildpack-python/issues/796) (I tried [this buildpack](https://elements.heroku.com/buildpacks/moneymeets/python-poetry-buildpack) but it didn't work).
+
 This project uses [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv) to manage the Python virtual environment, and [poetry](https://poetry.eustace.io/) to manage the project dependencies.
 
 If you don't have it, install python `3.8.5`.
@@ -105,4 +107,10 @@ pyenv activate dash_earthquakes
 
 # re-install all the dependencies
 poetry install
+```
+
+Generate `requirements.txt` to deploy on Heroku:
+
+```shell
+poetry export -o requirements.txt
 ```
