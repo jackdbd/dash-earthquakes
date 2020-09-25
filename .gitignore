@@ -1,6 +1,9 @@
 # PyCharm
 .idea/
 
+__pycache__/
+tests/__pycache__/
+
 # environment variables
 .env
 
