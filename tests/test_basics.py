@@ -1,12 +1,9 @@
 import os
 import unittest
-from app import external_css, server, app_name, app
+from app import server, app_name, app
 
 
 class TestApp(unittest.TestCase):
-    def test_font_awesome_in_external_css(self):
-        css = list(filter(lambda x: "font-awesome.min.css" in x, external_css))
-        self.assertIs(len(css), 1)
 
     def test_root_layout_is_container(self):
         self.assertIs(app._layout.className, "container")
