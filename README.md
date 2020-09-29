@@ -81,6 +81,20 @@ Format all code with black:
 poetry run poe format
 ```
 
+## Docker
+
+Build the Docker image and give it a name and a version tag
+
+```shell
+docker build -t dash-earthquakes:v0.1.0 .
+```
+
+Run the Docker container
+
+```shell
+docker run --env-file .env -p 80:5000 dash-earthquakes:v0.1.0
+```
+
 ## Troubleshooting
 
 If you are on Ubuntu you might get `ModuleNotFoundError: No module named '_bz2'` and/or `UserWarning: Could not import the lzma module. Your installed Python is incomplete. Attempting to use lzma compression will result in a RuntimeError.` These errors are caused by pandas when it tries to import these [compression libraries](https://github.com/pandas-dev/pandas/issues/27575). If you get these errors you need to install the libbz2-dev package and the liblzma-dev package, then re-compile your python interpreter.
