@@ -23,9 +23,9 @@ except KeyError:
     load_dotenv(dotenv_path)
 
 if os.environ.get("PLOTLY_USERNAME") is None:
-    raise Exception("PLOTLY_USERNAME not set in .env")
+    raise Exception("PLOTLY_USERNAME not set")
 if os.environ.get("PLOTLY_API_KEY") is None:
-    raise Exception("PLOTLY_API_KEY not set in .env")
+    raise Exception("PLOTLY_API_KEY not set")
 chart_studio.tools.set_credentials_file(
     os.environ["PLOTLY_USERNAME"], os.environ["PLOTLY_API_KEY"]
 )
@@ -41,7 +41,7 @@ data = json.loads(req.text)
 #     data = json.load(data_file)
 
 if os.environ.get("MAPBOX_ACCESS_TOKEN") is None:
-    raise Exception("MAPBOX_ACCESS_TOKEN not set in .env")
+    raise Exception("MAPBOX_ACCESS_TOKEN not set")
 mapbox_access_token = os.environ.get("MAPBOX_ACCESS_TOKEN")
 
 # http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=5
