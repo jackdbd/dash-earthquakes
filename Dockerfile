@@ -21,7 +21,8 @@ RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/${POETRY_VERSIO
 COPY pyproject.toml poetry.lock ${APP_DIR}/
 RUN poetry install
 
-COPY app.py assets ${APP_DIR}/
+COPY assets/* ${APP_DIR}/assets/
+COPY app.py ${APP_DIR}/
 
 EXPOSE ${APP_PORT}
 

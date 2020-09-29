@@ -98,7 +98,7 @@ docker run --env-file .env -p 80:5000 dash-earthquakes:v0.1.0
 Deploy the dockerized app on CapRover (running on my DigitalOcean Droplet):
 
 ```shell
-caprover deploy
+./deploy.sh
 ```
 
 ## Troubleshooting
