@@ -83,16 +83,22 @@ poetry run poe format
 
 ## Docker
 
-Build the Docker image and give it a name and a version tag
+Build the Docker image and give it a name and a version tag:
 
 ```shell
 docker build -t dash-earthquakes:v0.1.0 .
 ```
 
-Run the Docker container
+Run the Docker container:
 
 ```shell
 docker run --env-file .env -p 80:5000 dash-earthquakes:v0.1.0
+```
+
+Deploy the dockerized app on CapRover (running on my DigitalOcean Droplet):
+
+```shell
+caprover deploy
 ```
 
 ## Troubleshooting
