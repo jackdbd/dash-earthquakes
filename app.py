@@ -13,14 +13,9 @@ from dash.dependencies import Input, Output
 from dotenv import load_dotenv
 
 
-try:
-    # the app is on Heroku
-    os.environ["DYNO"]
-    debug = False
-except KeyError:
-    debug = True
-    dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(dotenv_path)
+DEBUG = True
+dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(dotenv_path)
 
 if os.environ.get("PLOTLY_USERNAME") is None:
     raise Exception("PLOTLY_USERNAME not set")
@@ -418,4 +413,4 @@ def _update_graph(map_style, region):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run_server(debug=debug, port=port, threaded=True)
+    app.run_server(debug=DEBUG, port=port, threaded=True)
