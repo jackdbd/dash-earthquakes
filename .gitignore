@@ -8,5 +8,8 @@ tests/__pycache__/
 # local copy of the GeoJSON feed from the USGS website (for development)
 4.5_month.geojson
 
-# service account for the application (the app is deployed on Cloud Run)
+# service account JSON key (it's the SA attached to the application deployed on Cloud Run)
 sa-dash-earthquakes.json
+
+# generated credentials from google-github-actions/auth
+gha-creds-*.json
