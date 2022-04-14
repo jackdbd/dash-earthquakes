@@ -10,24 +10,54 @@ on:
 
 jobs:
   build-and-test:
-    name: ${{ matrix.build-mode }} build on ${{ matrix.host }}
+    name: 🔧 ${{ matrix.host }} - Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.host }}
     strategy:
       fail-fast: true
       matrix:
         host: [ubuntu-20.04]
-        zig-version: [3.8.5]
+        python-version: [3.8.5]
     steps:
-      - name: Checkout
+      - name: 🛎️ Checkout
         uses: actions/checkout@v2
-      - name: Install Poetry
+      - name: 🖥️ Install Poetry
         uses: snok/install-poetry@v1
         with:
           version: 1.1.13
           virtualenvs-create: false
-      - name: Install dependencies
+      - name: 🖥️ Install dependencies
         run: poetry install --verbose --no-interaction --no-ansi
-      - name: Format with black
+      - name: ✔️ Format with black
         run: poetry run poe format
-      - name: Test with pytest
+      - name: 🔎 Test with pytest
+        env:
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+          PLOTLY_API_KEY: ${{ secrets.PLOTLY_API_KEY }}
+          PLOTLY_USERNAME: ${{ secrets.PLOTLY_USERNAME }}
         run: poetry run poe test
+      - name: 🔑 Authenticate to Google Cloud
+        # https://github.com/marketplace/actions/authenticate-to-google-cloud
+        uses: google-github-actions/auth@v0.7.0
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      - name: Set up gcloud
+        # https://github.com/marketplace/actions/set-up-gcloud-cloud-sdk-environment
+        uses: google-github-actions/setup-gcloud@v0.6.0
+      - name: Trigger a build on Cloud Build using gcloud
+        # the service account that submits the build to Cloud Build must have at
+        # least these IAM roles:
+        # roles/cloudbuild.builds.builder
+        # roles/viewer
+        # See also these links for examples/issues
+        # https://github.com/google-github-actions/setup-gcloud/tree/main/example-workflows/cloud-build
+        # https://github.com/google-github-actions/setup-gcloud/issues/62
+        # https://cloud.google.com/build/docs/cloud-build-service-account#default_permissions_of_service_account
+        env:
+          MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
+          PLOTLY_API_KEY: ${{ secrets.PLOTLY_API_KEY }}
+          PLOTLY_USERNAME: ${{ secrets.PLOTLY_USERNAME }}
+        run: |-
+          gcloud builds submit \
+            --quiet \
+            --config cloudbuild.yaml \
+            --substitutions _MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN,_PLOTLY_API_KEY=$PLOTLY_API_KEY,_PLOTLY_USERNAME=$PLOTLY_USERNAME
