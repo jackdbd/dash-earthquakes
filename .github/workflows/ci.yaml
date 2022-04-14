@@ -17,15 +17,18 @@ jobs:
       matrix:
         host: [ubuntu-20.04]
         python-version: [3.8.5]
+    # permissions granted to the GITHUB_TOKEN secret
+    # https://github.blog/changelog/2021-04-20-github-actions-control-permissions-for-github_token/
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
-      - name: 🛎️ Checkout
-        uses: actions/checkout@v2
-      - name: 🖥️ Install Poetry
-        uses: snok/install-poetry@v1
+      - uses: actions/checkout@v3
+      - uses: snok/install-poetry@v1
         with:
           version: 1.1.13
           virtualenvs-create: false
-      - name: 🖥️ Install dependencies
+      - name: 🖥️ Install dependencies with Poetry
         run: poetry install --verbose --no-interaction --no-ansi
       - name: ✔️ Format with black
         run: poetry run poe format
@@ -35,15 +38,22 @@ jobs:
           PLOTLY_API_KEY: ${{ secrets.PLOTLY_API_KEY }}
           PLOTLY_USERNAME: ${{ secrets.PLOTLY_USERNAME }}
         run: poetry run poe test
-      - name: 🔑 Authenticate to Google Cloud
+      - name: 🔑 Authenticate to Google Cloud using Workload Identity Federation
         # https://github.com/marketplace/actions/authenticate-to-google-cloud
+        # https://github.com/google-github-actions/auth/blob/main/docs/TROUBLESHOOTING.md
         uses: google-github-actions/auth@v0.7.0
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          # specify token_format only when troubleshooting "permission denied" errors
+          # https://github.com/google-github-actions/auth/blob/main/docs/TROUBLESHOOTING.md#permission-denied
+          token_format: 'access_token'
+          # workload_identity_provider: projects/${{ secrets.GCP_PROJECT_NUM }}/locations/global/workloadIdentityPools/${{ secrets.WORKLOAD_IDENTITY_POOL }}/providers/${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          workload_identity_provider: projects/1051247446620/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          # service_account: sa-dash-earthquakes@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          service_account: sa-dash-earthquakes@prj-kitchen-sink.iam.gserviceaccount.com
       - name: Set up gcloud
         # https://github.com/marketplace/actions/set-up-gcloud-cloud-sdk-environment
         uses: google-github-actions/setup-gcloud@v0.6.0
-      - name: Trigger a build on Cloud Build using gcloud
+      - name: Trigger a build on Cloud Build
         # the service account that submits the build to Cloud Build must have at
         # least these IAM roles:
         # roles/cloudbuild.builds.builder
