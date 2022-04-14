@@ -1,11 +1,17 @@
-FROM python:3.8
+# https://hub.docker.com/_/python
+FROM python:3.8-slim-bullseye
 
-LABEL maintainer="jackdebidda@gmail.com"
+LABEL maintainer="giacomo@giacomodebidda.com"
 
-ENV POETRY_VERSION=1.0.0 \
-    APP_DIR=/usr/src/app \
+# Debian bullseye slim images do not include curl, so we install it now
+RUN apt-get -qq update && \
+    apt-get -qq -y install curl
+
+# https://stackoverflow.com/questions/46288847/how-to-suppress-pip-upgrade-warning
+ENV APP_DIR=/usr/src/app \
     APP_PORT=5000 \
-    PATH="/root/.poetry/bin:$PATH"
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/root/.local/bin:$PATH"
 
 RUN mkdir -p ${APP_DIR}
 
@@ -13,17 +19,21 @@ RUN mkdir -p ${APP_DIR}
 # ENTRYPOINT, COPY and ADD instructions that follow it in the Dockerfile.
 WORKDIR ${APP_DIR}
 
-# Install and config Poetry
-RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/${POETRY_VERSION}/get-poetry.py | python && \
-    poetry config virtualenvs.create false
+# copy just the dependencies here, since they change less frequently than the application
+COPY poetry.lock pyproject.toml ${APP_DIR}/
 
-# Copy only requirements, to cache them in Docker layer.
-COPY pyproject.toml poetry.lock ${APP_DIR}/
-RUN poetry install
+# install poetry, configure it, show some debug info, then use poetry to install the app's dependencies
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    poetry config virtualenvs.create false && \
+    poetry --version && \
+    poetry config --list && \
+    poetry show --tree && \
+    poetry install --verbose --no-interaction --no-ansi
 
-COPY assets/* ${APP_DIR}/assets/
+# copy the application's source code and assets
 COPY app.py ${APP_DIR}/
+COPY assets/* ${APP_DIR}/assets/
 
 EXPOSE ${APP_PORT}
 
-CMD gunicorn --bind 0.0.0.0:${APP_PORT} --access-logfile - "app:server"
+CMD gunicorn --bind :${APP_PORT} "app:server"

@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": false,
+  "files.exclude": {
+    "**/.pytest_cache/": true,
+    "**/__pycache__/": true
+  },
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "python.formatting.provider": "black"
+}

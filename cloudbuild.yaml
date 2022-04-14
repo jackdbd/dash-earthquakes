@@ -1,0 +1,84 @@
+# Cloud Build builders
+# https://github.com/GoogleCloudPlatform/cloud-builders
+# https://console.cloud.google.com/gcr/images/k8s-skaffold
+
+# Cloud Build built-in substitutions
+# https://cloud.google.com/build/docs/configuring-builds/substitute-variable-values#using_default_substitutions
+
+# gcloud deploy for Cloud Run
+# https://cloud.google.com/sdk/gcloud/reference/run/deploy
+# M = megabyte, Mi = mebibyte, G = gigabyte, Gi = gibibyte
+# https://cloud.google.com/sdk/gcloud/reference/functions/deploy#--memory
+
+steps:
+  - id: "Install Poetry and run tests"
+    name: ubuntu
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        apt -qq update &&
+        # This image does not have curl, so we install it here
+        apt -qq -y install curl &&
+        # This is for adding a PPA later (I think)
+        apt -qq -y install software-properties-common &&
+        # This PPA contains more recent Python versions packaged for Ubuntu
+        # https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa
+        add-apt-repository ppa:deadsnakes/ppa &&
+        apt -qq -y install python3.8 &&
+        # Poetry requires ensurepip, which can be found in python3.8-venv
+        apt -qq -y install python3.8-venv &&
+        apt -qq -y install python3-pip &&
+        # Install Poetry
+        curl -sSL https://install.python-poetry.org | python3 - &&
+        # Configure Poetry and install all project's dependencies
+        /builder/home/.local/bin/poetry config virtualenvs.create true &&
+        /builder/home/.local/bin/poetry config --list &&
+        /builder/home/.local/bin/poetry install --verbose --no-interaction --no-ansi
+        # Finally, use Poetry to run a few tasks
+        # /builder/home/.local/bin/poetry run poe format
+        # /builder/home/.local/bin/poetry run poe test
+    env:
+      - 'PIP_DISABLE_PIP_VERSION_CHECK=1'
+  - id: "Build container image"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_IMAGE}', '.']
+  - id: "Push container image to Artifact Registry"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE}']
+  - id: "Deploy to Cloud Run"
+    name: gcr.io/cloud-builders/gcloud:${_GCLOUD_VERSION}
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        gcloud beta run deploy ${_SERVICE_NAME} \
+          --allow-unauthenticated \
+          --image ${_IMAGE} \
+          --memory 256M \
+          --min-instances 0 \
+          --max-instances 1 \
+          --platform managed \
+          --port ${_APP_PORT} \
+          --project ${PROJECT_ID} \
+          --region ${_REGION_ID} \
+          --service-account ${_SERVICE_ACCOUNT} \
+          --set-env-vars MAPBOX_ACCESS_TOKEN=${_MAPBOX_ACCESS_TOKEN},PLOTLY_API_KEY=${_PLOTLY_API_KEY},PLOTLY_USERNAME=${_PLOTLY_USERNAME} \
+          --timeout 15s \
+          --update-labels customer=personal,resource=service \
+          --verbosity warning
+
+# user-defined substitutions and default values
+substitutions:
+  _APP_PORT: "5000"
+  _ARTIFACT_REGISTRY_REPO_ID: cloud-run-source-deploy
+  _GCLOUD_VERSION: latest
+  _IMAGE: "${_REGION_ID}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_ID}/${_IMAGE_NAME}:${_IMAGE_TAG}"
+  _IMAGE_NAME: dash-earthquakes
+  _IMAGE_TAG: latest
+  _REGION_ID: europe-west3
+  _SERVICE_ACCOUNT: sa-dash-earthquakes@prj-kitchen-sink.iam.gserviceaccount.com
+  _SERVICE_NAME: dash-earthquakes-production
+options:
+    # https://cloud.google.com/build/docs/configuring-builds/substitute-variable-values#dynamic_substitutions
+    dynamic_substitutions: true

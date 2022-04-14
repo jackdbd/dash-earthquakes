@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.build-mode }} build on ${{ matrix.host }}
+    runs-on: ${{ matrix.host }}
+    strategy:
+      fail-fast: true
+      matrix:
+        host: [ubuntu-20.04]
+        zig-version: [3.8.5]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.13
+          virtualenvs-create: false
+      - name: Install dependencies
+        run: poetry install --verbose --no-interaction --no-ansi
+      - name: Format with black
+        run: poetry run poe format
+      - name: Test with pytest
+        run: poetry run poe test
