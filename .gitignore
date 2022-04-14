@@ -7,3 +7,6 @@ tests/__pycache__/
 
 # local copy of the GeoJSON feed from the USGS website (for development)
 4.5_month.geojson
+
+# service account for the application (the app is deployed on Cloud Run)
+sa-dash-earthquakes.json

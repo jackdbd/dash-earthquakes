@@ -100,7 +100,7 @@ poetry run poe container_run
 Trigger a build on [Cloud Build](https://cloud.google.com/build). Cloud Build will build a container image, push it to [Artifact Registry](https://cloud.google.com/artifact-registry), then deploy the app to [Cloud Run](https://cloud.google.com/run):
 
 ```sh
-gcloud beta builds submit ./ \
+gcloud builds submit ./ \
   --config cloudbuild.yaml \
   --project $GCP_PROJECT_ID \
   --substitutions _MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN,_PLOTLY_API_KEY=$PLOTLY_API_KEY,_PLOTLY_USERNAME=$PLOTLY_USERNAME \

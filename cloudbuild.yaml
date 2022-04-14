@@ -11,35 +11,6 @@
 # https://cloud.google.com/sdk/gcloud/reference/functions/deploy#--memory
 
 steps:
-  - id: "Install Poetry and run tests"
-    name: ubuntu
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        apt -qq update &&
-        # This image does not have curl, so we install it here
-        apt -qq -y install curl &&
-        # This is for adding a PPA later (I think)
-        apt -qq -y install software-properties-common &&
-        # This PPA contains more recent Python versions packaged for Ubuntu
-        # https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa
-        add-apt-repository ppa:deadsnakes/ppa &&
-        apt -qq -y install python3.8 &&
-        # Poetry requires ensurepip, which can be found in python3.8-venv
-        apt -qq -y install python3.8-venv &&
-        apt -qq -y install python3-pip &&
-        # Install Poetry
-        curl -sSL https://install.python-poetry.org | python3 - &&
-        # Configure Poetry and install all project's dependencies
-        /builder/home/.local/bin/poetry config virtualenvs.create true &&
-        /builder/home/.local/bin/poetry config --list &&
-        /builder/home/.local/bin/poetry install --verbose --no-interaction --no-ansi
-        # Finally, use Poetry to run a few tasks
-        # /builder/home/.local/bin/poetry run poe format
-        # /builder/home/.local/bin/poetry run poe test
-    env:
-      - 'PIP_DISABLE_PIP_VERSION_CHECK=1'
   - id: "Build container image"
     name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', '${_IMAGE}', '.']
