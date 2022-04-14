@@ -2,31 +2,34 @@
 name = "dash-earthquakes"
 version = "0.1.0"
 description = "A Plotly Dash application showing earthquake data from the USGS website"
-authors = ["Giacomo Debidda <jackdebidda@gmail.com>"]
 license = "MIT"
-repository = "https://github.com/jackdbd/dash-earthquakes"
+authors = ["Giacomo Debidda <giacomo@giacomodebidda.com>"]
 homepage = "https://github.com/jackdbd/dash-earthquakes"
-keywords = ['python', 'dashboard', 'usgs', 'mapbox']
+repository = "https://github.com/jackdbd/dash-earthquakes"
+keywords = ['dashboard', 'mapbox', 'python', 'usgs']
 
 [tool.poetry.dependencies]
-arrow = "^0.16.0"
+arrow = "^1.2.2"
 chart-studio = "^1.1.0"
-dash = "^1.16.1"
-gunicorn = "^20.0.4"
-pandas = "^1.1.2"
+dash = "^2.3.1"
+gunicorn = "^20.1.0"
+pandas = "^1.4.2"
 python = "^3.8"
-python-dotenv = "^0.14.0"
+python-dotenv = "^0.20.0"
 
 [tool.poetry.dev-dependencies]
-black = "^20.8b1"
-poethepoet = "^0.8.0"
-pytest = "^6.0.2"
+black = "^22.3.0"
+poethepoet = "^0.13.1"
+pytest = "^7.1.1"
 
 [tool.poe.tasks]
-dev = "poetry run python app.py"
-format = "poetry run black ."
-prod = "poetry run gunicorn app:server --bind 0.0.0.0:5000"
-test = "pytest --verbose"
+container_build = 'docker build ./ -t dash-earthquakes:latest'
+container_explore = 'dive dash-earthquakes:latest'
+container_run = 'docker run -it -p 8090:5000 --env MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN --env PLOTLY_API_KEY=$PLOTLY_API_KEY --env PLOTLY_USERNAME=$PLOTLY_USERNAME dash-earthquakes:latest'
+container_scan = 'trivy image --severity MEDIUM,HIGH,CRITICAL -f table dash-earthquakes:latest'
+dev = 'poetry run python app.py'
+format = 'poetry run black .'
+test = 'pytest --verbose'
 
 [build-system]
 requires = ["poetry-core>=1.0.0a5"]

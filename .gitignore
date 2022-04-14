@@ -1,11 +1,9 @@
-# PyCharm
-.idea/
-
+# python bytecode
 __pycache__/
 tests/__pycache__/
 
 # environment variables
-.env
+.envrc
 
 # local copy of the GeoJSON feed from the USGS website (for development)
 4.5_month.geojson

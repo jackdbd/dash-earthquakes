@@ -4,7 +4,6 @@ from app import server, app_name, app
 
 
 class TestApp(unittest.TestCase):
-
     def test_root_layout_is_container(self):
         self.assertIs(app._layout.className, "container")
 

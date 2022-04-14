@@ -1,21 +1,21 @@
-import os
-import arrow
-import dash
-import chart_studio
-import requests
 import functools
+import os
+
+import arrow
+import chart_studio
+import dash
 import pandas as pd
-import dash_core_components as dcc
-import dash_html_components as html
 import plotly.graph_objs as go
-from flask import Flask, json
+import requests
+from dash import dcc, html
 from dash.dependencies import Input, Output
-from dotenv import load_dotenv
 
+# from dotenv import load_dotenv
+from flask import Flask, json
 
-DEBUG = True
-dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
-load_dotenv(dotenv_path)
+DEBUG = True if os.environ.get("DEBUG") else False
+# dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+# load_dotenv(dotenv_path)
 
 if os.environ.get("PLOTLY_USERNAME") is None:
     raise Exception("PLOTLY_USERNAME not set")
@@ -50,9 +50,9 @@ colorscale_magnitude = [
 
 # http://colorbrewer2.org/#type=sequential&scheme=Greys&n=3
 colorscale_depth = [
-    [0, 'rgb(240,240,240)'],
-    [0.5, 'rgb(189,189,189)'],
-    [1, 'rgb(99,99,99)']
+    [0, "rgb(240,240,240)"],
+    [0.5, "rgb(189,189,189)"],
+    [1, "rgb(99,99,99)"],
 ]
 
 theme = {
